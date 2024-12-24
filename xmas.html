@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Jack and Kate Christmas Savenger Hack</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00FF00; /* "Hacker green" text */
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Center everything on the page */
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* A Christmas flair at the top (ASCII Tree) */
+        #asciiArt {
+            white-space: pre;
+            margin-bottom: 20px;
+            color: red; /* Red for some holiday flair */
+            text-align: center;
+        }
+
+        /* The "terminal" area */
+        #terminal {
+            background-color: #101010;
+            border: 2px solid #00FF00;
+            width: 100%;
+            max-width: 600px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #output {
+            min-height: 200px; /* Just to keep some space */
+            padding-bottom: 10px;
+        }
+
+        /* The input prompt */
+        #promptLine {
+            color: #00FF00;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        #userInput {
+            background-color: #101010;
+            border: none;
+            color: #00FF00;
+            outline: none;
+            width: 80%;
+            font-family: monospace;
+        }
+
+            #userInput::placeholder {
+                color: #00FF00;
+            }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="asciiArt">
+            *
+            /|\
+            / | \
+            /  |  \
+            /   |   \
+            /    |    \
+            Merry Christmas!
+            Jack and Kates - Christmas Savenger Hack
+        </div>
+
+        <div id="terminal">
+            <div id="output"></div>
+            <div>
+                <span id="promptLine">C:\XmasHunt></span>
+                <input type="text"
+                       id="userInput"
+                       placeholder="Type your answer here..."
+                       autocomplete="off" />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Array of puzzle steps
+        // Each step has a 'question' and an 'answer'
+        const puzzles = [
+            {
+                question: "Practice Question: Who wears the suit that is the same color as my legs after a night dancing?",
+                answer: "Santa",
+                correctResponse: "Ok great you got it, BTW make sure you save your passwords in case you need to try back later"
+            },
+            {
+                question: "First Question: The more of me you take, the more you leave behind. What am I?",
+                answer: "footsteps",
+                correctResponse: "Nice work! I knew you cou..grrrr woof woof..."
+            },
+            {
+                question: "Second Question: I love the sounds of water!! woof! So many streams, but only one is the mostest ",
+                answer: "Blinding Lights"
+            },
+            {
+                question: "Third Question: Im typing this with my tail, and way to busy for you, go ask Mom for question 3. Hey that rhymes!",
+                answer: "robber"
+            },
+            {
+                question: "Fourth: Something scary? woof! something merry? I took a photo with my tail hole, look -->  <a href='google.com'> Google </a>",
+                answer: "sailboat"
+            },
+            {
+                question: "*Dexter puts on a fancy cowboy hat*  oKK partner - text and asKK, text and asKK, asKK away",
+                answer: "Grinch"
+            },
+            {
+                question: "hmm - I know the next password is around <a href='google.com'> here </a>...",
+                answer: "plop"
+            },
+            {
+                question: "Hey, so up next is STOP TALKING JACK! - solve this --> <a href='google.com'> Hang Dog </a> .",
+                answer: "Dexter"
+            },
+            {
+                question: "Here we are, the penultimate question - Dexters Treasures shall soon be yours... NOT hahahahahaha",
+                answer: "NOT"
+            },
+            {
+                question: "Congrats, you win Dexters Christmas Treasures can be found with this  <a href='google.com'> map </a> .  ",
+                answer: "Snow"
+            }
+        ];
+
+        let currentPuzzle = 0; // Index of the current puzzle
+
+        const outputDiv = document.getElementById("output");
+        const userInput = document.getElementById("userInput");
+
+        // Display the first puzzle question on load
+        window.onload = () => {
+            printLine("Hello there, Dexter here with a whole new Christmas game for this year. Two stolen treasures lost. There is only one way to find, using my compawter to hack into the DOC (Dogs of Christmas) and find the locations!");
+            printLine("Solve each puzzle, get a password, enter it and move on - lets start with a easy one.");
+            printPuzzle();
+        };
+
+        // Listen for 'Enter' keypress in the input
+        userInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                checkAnswer(this.value.trim());
+                this.value = "";
+            }
+        });
+
+        // Helper function to print a line of text to the "terminal"
+        function printLine(text) {
+            const line = document.createElement("div");
+            //line.textContent = text;
+            line.innerHTML = text;
+            outputDiv.appendChild(line);
+            // Scroll to bottom
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        // Print the current puzzle question
+        function printPuzzle() {
+            if (currentPuzzle < puzzles.length) {
+                printLine(puzzles[currentPuzzle].question);
+            } else {
+                // All puzzles solved
+                printLine("Congratulations! You've solved all puzzles.");
+                printLine("You Win!");
+            }
+        }
+
+        // Check user's input against the current puzzle answer
+        function checkAnswer(userAnswer) {
+            // If all puzzles are done, ignore further input
+            if (currentPuzzle >= puzzles.length) {
+                printLine("All puzzles have been solved. Enjoy your Christmas!");
+                return;
+            }
+
+            // Print what the user typed
+            printLine("C:\\XmasHunt> " + userAnswer);
+
+            // Compare the user input with the correct answer (case-insensitive)
+            const correctAnswer = puzzles[currentPuzzle].answer.toLowerCase();
+            if (userAnswer.toLowerCase() === correctAnswer) {
+                //printLine("Correct!");
+                //printLine(puzzles[currentPuzzle].correctResponse);
+                //currentPuzzle++;
+                //printPuzzle();
+                userInput.disabled = true;
+                window.addEventListener("keydown", function handleNextQuestion() {
+                window.removeEventListener("keydown", handleNextQuestion);
+                    userInput.disabled = false;
+                    
+                         // Clear the console
+                       outputDiv.innerHTML = "";
+                    
+                          // Move on to next puzzle
+                        currentPuzzle++;
+                      printPuzzle();
+                       }, { once: true });
+            } else {
+                printLine("Incorrect, try again!");
+            }
+        }
+    </script>
+</body>
+</html>
+
+
