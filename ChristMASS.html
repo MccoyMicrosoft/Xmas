@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hangman - Christmas Edition</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00ff00; /* "Hacker green" text */
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
+        }
+
+        #terminal {
+            background-color: #101010;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        #asciiArt {
+            color: red;
+            white-space: pre;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Basic styling for game elements */
+        #hangmanDrawing {
+            font-family: monospace;
+            margin-bottom: 10px;
+            min-height: 7em; /* Ensure enough space to display ASCII hangman */
+        }
+
+        #wordDisplay {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        #lettersGuessed {
+            margin-bottom: 10px;
+        }
+
+        #message {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            background-color: #101010;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px;
+            font-family: monospace;
+            width: 50px;
+            text-align: center;
+        }
+
+        button {
+            background-color: #101010;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: monospace;
+            margin-left: 5px;
+        }
+
+            button:hover {
+                background-color: #202020;
+            }
+
+        #resetBtn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="asciiArt">
+            *
+            /|\
+            / | \
+            /  |  \
+            /   |   \
+            /    |    \
+            Hang Dog
+        </div>
+
+        <div id="terminal">
+            <h2>Hangman - Christmas Edition</h2>
+            <div id="hangmanDrawing"></div>
+            <div id="wordDisplay"></div>
+            <div id="lettersGuessed"></div>
+            <div>
+                <input type="text"
+                       id="guessInput"
+                       maxlength="1"
+                       placeholder="Letter" />
+                <button id="guessBtn">Guess</button>
+            </div>
+            <div id="message"></div>
+            <button id="resetBtn" style="display:none;">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        /*
+          GAME LOGIC:
+
+          - 3 levels total, each with its own set of words.
+          - Each win moves you to the next level (up to 3).
+          - If you lose at any point, you reset back to level 1.
+          - Win all 3 in a row -> final victory message.
+
+          We'll keep a simple ASCII Hangman with up to 6 wrong guesses.
+        */
+
+        // WORDS for each difficulty level:
+        const wordsLevel1 = ["CAT", "DOG", "CAR", "TOY", "FAN"];
+        const wordsLevel2 = ["APPLE", "ROBOT", "PIZZA", "SANTA", "WREATH"];
+        const wordsLevel3 = ["BICYCLE", "XMASHUNT", "CHRISTMAS", "GINGERBREAD", "NUTCRACKER"];
+
+        // Max number of wrong guesses allowed
+        const maxWrong = 6;
+
+        // Keep track of the current level (1 to 3)
+        let currentLevel = 1;
+        // Keep track of total wins in a row
+        let consecutiveWins = 0;
+
+        // Current game state
+        let currentWord = "";
+        let guessedLetters = [];
+        let wrongCount = 0;
+
+        const hangmanDrawingDiv = document.getElementById("hangmanDrawing");
+        const wordDisplayDiv = document.getElementById("wordDisplay");
+        const lettersGuessedDiv = document.getElementById("lettersGuessed");
+        const messageDiv = document.getElementById("message");
+        const guessInput = document.getElementById("guessInput");
+        const guessBtn = document.getElementById("guessBtn");
+        const resetBtn = document.getElementById("resetBtn");
+
+        // ASCII Hangman states for 0..6 wrong guesses
+        const hangmanStates = [
+            `
+           +---+
+           |   |
+               |
+               |
+               |
+               |
+          =========`,
+            `
+           +---+
+           |   |
+           O   |
+               |
+               |
+               |
+          =========`,
+            `
+           +---+
+           |   |
+           O   |
+           |   |
+               |
+               |
+          =========`,
+            `
+           +---+
+           |   |
+           O   |
+          /|   |
+               |
+               |
+          =========`,
+            `
+           +---+
+           |   |
+           O   |
+          /|\\  |
+               |
+               |
+          =========`,
+            `
+           +---+
+           |   |
+           O   |
+          /|\\  |
+          /    |
+               |
+          =========`,
+            `
+           +---+
+           |   |
+           O   |
+          /|\\  |
+          / \\  |
+               |
+          =========`
+        ];
+
+        // Initialize a new game for the current level
+        function startNewGame() {
+            messageDiv.textContent = "";
+            resetBtn.style.display = "none";
+            guessBtn.disabled = false;
+            guessInput.disabled = false;
+
+            // Pick a random word from the array based on current level
+            let wordPool;
+            if (currentLevel === 1) {
+                wordPool = wordsLevel1;
+            } else if (currentLevel === 2) {
+                wordPool = wordsLevel2;
+            } else {
+                wordPool = wordsLevel3;
+            }
+
+            currentWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+            guessedLetters = [];
+            wrongCount = 0;
+
+            updateDisplay();
+        }
+
+        // Update the display of the word, guessed letters, and hangman
+        function updateDisplay() {
+            // Update hangman
+            //hangmanDrawingDiv.textContent = hangmanStates[wrongCount];
+            hangmanDrawingDiv.textContent = "Guesses Remaining: " + (maxWrong - wrongCount);
+
+            // Display the word with underscores for unguessed letters
+            let displayStr = "";
+            for (let i = 0; i < currentWord.length; i++) {
+                const letter = currentWord[i];
+                if (guessedLetters.includes(letter)) {
+                    displayStr += letter + " ";
+                } else {
+                    displayStr += "_ ";
+                }
+            }
+            wordDisplayDiv.textContent = displayStr.trim();
+
+            // Display guessed letters
+            lettersGuessedDiv.textContent = "Guessed: " + guessedLetters.join(", ");
+        }
+
+        // Handle a guess
+        function handleGuess() {
+            const guess = guessInput.value.toUpperCase();
+            guessInput.value = "";
+
+            // Basic validation
+            if (!guess || guess.length !== 1 || !/[A-Z]/.test(guess)) {
+                messageDiv.textContent = "Please enter a single letter (A-Z).";
+                return;
+            }
+
+            // If already guessed, ignore
+            if (guessedLetters.includes(guess)) {
+                messageDiv.textContent = "You already guessed that letter!";
+                return;
+            }
+
+            guessedLetters.push(guess);
+
+            // Check if the letter is in the word
+            if (!currentWord.includes(guess)) {
+                // Wrong guess
+                wrongCount++;
+            }
+
+            updateDisplay();
+            checkGameStatus();
+        }
+
+        // Check if player won or lost
+        function checkGameStatus() {
+            // Did we lose?
+            if (wrongCount >= maxWrong) {
+                // Game over, reset progress
+                messageDiv.textContent = `You lost! The word was "${currentWord}". Returning to Level 1.`;
+                consecutiveWins = 0;
+                currentLevel = 1;
+                endGame();
+                return;
+            }
+
+            // Did we win?
+            // Check if all letters are guessed
+            let allGuessed = true;
+            for (let i = 0; i < currentWord.length; i++) {
+                if (!guessedLetters.includes(currentWord[i])) {
+                    allGuessed = false;
+                    break;
+                }
+            }
+            if (allGuessed) {
+                consecutiveWins++;
+                messageDiv.textContent = `You guessed "${currentWord}"!`;
+
+                // Check if this was the 3rd win
+                if (consecutiveWins >= 3) {
+                    messageDiv.textContent += " PASSWORD: Dexter";
+                    // Reset for a new cycle or just end the game
+                    consecutiveWins = 0;
+                    currentLevel = 1;
+                    endGame();
+                } else {
+                    // Move to next level (or wrap if level 3 was not the 3rd consecutive win)
+                    currentLevel++;
+                    if (currentLevel > 3) {
+                        // If they haven't reached 3 wins yet, cycle back to level 1
+                        currentLevel = 1;
+                    }
+                    endGame();
+                }
+            }
+        }
+
+        function endGame() {
+            guessBtn.disabled = true;
+            guessInput.disabled = true;
+            resetBtn.style.display = "inline-block";
+        }
+
+        // Event listeners
+        guessBtn.addEventListener("click", handleGuess);
+        guessInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                handleGuess();
+            }
+        });
+        resetBtn.addEventListener("click", () => {
+            startNewGame();
+        });
+
+        // Start the first game
+        startNewGame();
+    </script>
+</body>
+</html>

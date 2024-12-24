@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Winner</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00ff00; /* "Hacker green" text */
+            font-family: monospace;
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            min-height: 100vh;
+        }
+
+        #terminal {
+            background-color: #101010;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            max-width: 80%;
+            margin-top: 20px;
+        }
+
+        /* Optional ASCII flair at the top */
+        #asciiArt {
+            color: red;
+            white-space: pre;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Keyframes for a "scary flicker" effect */
+        @keyframes scaryFlicker {
+            0% {
+                opacity: 1;
+            }
+
+            5% {
+                opacity: 0.2;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            15% {
+                opacity: 0.6;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            25% {
+                opacity: 0.3;
+            }
+
+            30% {
+                opacity: 0.8;
+            }
+
+            40% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            55% {
+                opacity: 1;
+            }
+
+            60% {
+                opacity: 0.4;
+            }
+
+            75% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 0.1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* The flicker effect for each image */
+        img {
+            width: 300px; /* Adjust as desired */
+            height: auto;
+            animation: scaryFlicker 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="asciiArt">
+            *
+            /|\
+            / | \
+            /  |  \
+            /   |   \
+            /    |    \
+            Winner!!
+        </div>
+        <div id="terminal">
+            <h2>Flickering Images</h2>
+            <!-- The single IMG we will swap out -->
+            <img id="rotatingImage" src="" alt="Rotating Flicker" />
+        </div>
+    </div>
+
+    <script>
+    // Five images to rotate. Replace with your own images (GIF/PNG/JPG).
+    const images = [
+      "https://via.placeholder.com/300x200.png?text=Scary+1",
+      "https://via.placeholder.com/300x200.png?text=Scary+2",
+      "https://via.placeholder.com/300x200.png?text=Scary+3",
+      "https://via.placeholder.com/300x200.png?text=Scary+4",
+      "https://via.placeholder.com/300x200.png?text=Scary+5"
+    ];
+
+    let currentIndex = 0; // Start on the first image
+    const imgElement = document.getElementById("rotatingImage");
+
+    function rotateImage() {
+      // Update the src
+      imgElement.src = images[currentIndex];
+      // Move to next index (wrap around)
+      currentIndex = (currentIndex + 1) % images.length;
+
+      // Random delay between 1–5 seconds
+      const randomDelay = Math.floor(Math.random() * 5000) + 1000;
+
+      // Schedule next rotation
+      setTimeout(rotateImage, randomDelay);
+    }
+
+    // Start rotating on page load
+    window.onload = rotateImage;
+    </script>
+</body>
+</html>
